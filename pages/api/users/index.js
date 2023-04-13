@@ -3,8 +3,7 @@ import { supabaseService } from 'utils/supabaseServer'
 
 export default async function handler(req, res) {
   if (!req.headers.token) {
-    res.status(401).json({ error: 'Access denied!' })
-    return
+    return res.status(401).json({ error: 'Access denied!' })
   }
   supabase.auth.setAuth(req.headers.token)
   const { method } = req
@@ -18,16 +17,24 @@ export default async function handler(req, res) {
           .order('login', { ascending: true })
 
         if (errorGet) throw errorGet
-        res.status(200).json(users)
+        return res.status(200).json(users)
       } catch (error) {
-        res.status(404).json(error)
-        return
+        return res.status(404).json(error)
       }
-      break
     case 'POST':
-      // TODO валидацию
-      // is it admin
-      return false
+      switch (process.env.CREATE_USERS) {
+        case 'all':
+          // validation disabled
+          break
+
+        case 'admin':
+          // validation required
+          break
+
+        case 'none':
+        default:
+          return res.status(404).json({ error: 'Access denied!' })
+      }
       const { email, password, login } = req.body
       try {
         const { error: errorPost } = await supabaseService.auth.api.createUser({
@@ -37,14 +44,29 @@ export default async function handler(req, res) {
           email_confirm: true,
         })
         if (errorPost) throw errorPost
-        res.status(201).json({})
       } catch (error) {
-        res.status(404).json(error)
-        return
+        return res.status(404).json(error)
       }
-      break
+      try {
+        const { data: users, error: errorUser } = await supabaseService
+          .from('users')
+          .select('id')
+          .limit(2)
+        if (errorUser) throw errorUser
+
+        if (users?.length === 1) {
+          const { error: errorUpdate } = await supabaseService
+            .from('users')
+            .update({ is_admin: true })
+            .eq('id', users[0].id)
+          if (errorUpdate) throw errorUpdate
+        }
+        return res.status(201).json({})
+      } catch (error) {
+        return res.status(404).json(error)
+      }
     default:
       res.setHeader('Allow', ['GET', 'POST'])
-      res.status(405).end(`Method ${method} Not Allowed`)
+      return res.status(405).end(`Method ${method} Not Allowed`)
   }
 }
