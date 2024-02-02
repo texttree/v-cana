@@ -203,6 +203,24 @@ export function useCoordinators({ code }) {
   })
   return [coordinators, { mutate, error, isLoading }]
 }
+
+/**
+ *hook returns all users on specific project with role 'supporter'
+ * @param {string} code code of project
+ * @returns {array}
+ */
+export function useSupporters({ code }) {
+  const {
+    data: supporters,
+    mutate,
+    error,
+    isLoading,
+  } = useSWR(code ? [`/api/projects/${code}/supporters`] : null, fetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  })
+  return [supporters, { mutate, error, isLoading }]
+}
 /**
  *hook returns all users on specific project with role 'translator'
  * @param {string} code code of project
@@ -582,7 +600,7 @@ export function useAccess({ user_id, code }) {
     () => ['admin', 'coordinator', 'moderator', 'translator'].includes(level),
     [level]
   )
-
+  const isSupporterAccess = useMemo(() => ['admin', 'supporter'].includes(level), [level])
   const isModeratorAccess = useMemo(
     () => ['admin', 'coordinator', 'moderator'].includes(level),
     [level]
@@ -594,7 +612,13 @@ export function useAccess({ user_id, code }) {
   const isAdminAccess = useMemo(() => 'admin' === level, [level])
 
   return [
-    { isModeratorAccess, isCoordinatorAccess, isAdminAccess, isTranslatorAccess },
+    {
+      isModeratorAccess,
+      isCoordinatorAccess,
+      isAdminAccess,
+      isTranslatorAccess,
+      isSupporterAccess,
+    },
     { mutate, error, isLoading },
   ]
 }
@@ -618,6 +642,27 @@ export function useGetSteps({ code }) {
   return [steps, { mutate, error, isLoading }]
 }
 
+/**
+ *hook returns information about books and started chapters from table 'chapters' by project_code
+ * @param {string} code code of project
+ * @returns {array}
+ */
+export function useGetBooksWithStartedChapters(code) {
+  const {
+    data: startedChapters,
+    mutate,
+    error,
+    isLoading,
+  } = useSWR(code ? [`/api/projects/${code}/started_chapters`] : null, fetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  })
+  return [startedChapters, { mutate, error, isLoading }]
+}
+/**
+ *hook sets the color theme based on information from localStorage.
+ * @returns {string}
+ */
 export function useGetTheme() {
   const [theme, setTheme] = useState(() => {
     return checkLSVal('theme', 'default', 'string')

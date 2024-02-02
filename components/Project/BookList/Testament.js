@@ -52,7 +52,8 @@ function Testament({
     if (isBookCreated && book) {
       setCurrentBook(book)
       push({
-        pathname: `/projects/${project?.code}/books/${book}`,
+        pathname: '/projects/[code]/books/[bookid]',
+        query: { code: project?.code, bookid: book },
       })
     }
   }
@@ -113,9 +114,10 @@ function Testament({
                                     className="w-6 min-w-[1.5rem] cursor-pointer stroke-th-text-primary"
                                     onClick={() =>
                                       push({
-                                        pathname: `/projects/${project?.code}`,
+                                        pathname: '/projects/[code]',
                                         query: {
                                           properties: book,
+                                          code: project?.code,
                                         },
                                         shallow: true,
                                       })
@@ -154,9 +156,10 @@ function Testament({
                                     className="w-6 min-w-[1.5rem] cursor-pointer stroke-th-text-primary"
                                     onClick={() =>
                                       push({
-                                        pathname: `/projects/${project?.code}/books/read`,
+                                        pathname: '/projects/[code]/books/read',
                                         query: {
                                           bookid: book,
+                                          code: project?.code,
                                         },
                                         shallow: true,
                                       })
@@ -188,9 +191,10 @@ function Testament({
                           className="w-6 min-w-[1.5rem] cursor-pointer stroke-th-text-primary"
                           onClick={() =>
                             push({
-                              pathname: `/projects/${project?.code}/books/read`,
+                              pathname: '/projects/[code]/books/read',
                               query: {
                                 bookid: book,
+                                code: project?.code,
                               },
                               shallow: true,
                             })
@@ -213,9 +217,10 @@ function Testament({
                               className="w-6 min-w-[1.5rem] stroke-th-text-primary cursor-pointer"
                               onClick={() =>
                                 push({
-                                  pathname: `/projects/${project?.code}`,
+                                  pathname: '/projects/[code]',
                                   query: {
                                     properties: book,
+                                    code: project?.code,
                                   },
                                   shallow: true,
                                 })

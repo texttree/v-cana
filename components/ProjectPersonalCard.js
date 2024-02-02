@@ -231,7 +231,10 @@ function ProjectPersonalCard({ project, user }) {
                       })}
                       {briefResume === '' && (
                         <Link
-                          href={`/projects/${project?.code}/edit?setting=brief`}
+                          href={{
+                            pathname: '/projects/[code]/edit',
+                            query: { code: project.code, setting: 'brief' },
+                          }}
                           className="btn-primary flex justify-center gap-1 sm:gap-2"
                         >
                           {t(`${isCoordinatorAccess ? 'EditBrief' : 'OpenBrief'}`)}

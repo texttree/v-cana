@@ -83,7 +83,10 @@ function BookProperties({ project, user, bookCode, type, mutateBooks, books }) {
     <div className="flex flex-col w-full">
       <Breadcrumbs
         links={[
-          { title: project?.title, href: '/projects/' + project?.code },
+          {
+            title: project?.title,
+            href: '/projects/' + project?.code,
+          },
           { title: t('books:' + book?.code) },
         ]}
         full
@@ -185,9 +188,10 @@ function LevelChecks({ t, book, user, project, mutateBooks }) {
               className="flex gap-4 cursor-pointer text-th-primary-200 hover:opacity-70"
               onClick={() =>
                 push({
-                  pathname: `/projects/${project?.code}/books/read`,
+                  pathname: `/projects/[code]/books/read`,
                   query: {
                     bookid: book.code,
+                    code: project?.code,
                   },
                 })
               }

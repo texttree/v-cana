@@ -289,7 +289,10 @@ function ChapterVersesPage() {
           <Breadcrumbs
             full
             links={[
-              { title: project?.title, href: '/projects/' + code },
+              {
+                title: project?.title,
+                href: '/projects/' + project?.code,
+              },
               {
                 title: t(`books:${book?.code}`),
                 href: '/projects/' + code + '/books/' + bookid,

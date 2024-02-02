@@ -13,7 +13,8 @@ import RemoveParticipant from './RemoveParticipant'
 import AssignParticipant from './AssignPartiсipant'
 
 import useSupabaseClient from 'utils/supabaseClient'
-import { useCoordinators, useProject, useTranslators } from 'utils/hooks'
+import { useCoordinators, useProject, useSupporters, useTranslators } from 'utils/hooks'
+import SupportersList from './SupportersList'
 
 function Parcticipants({ users, access: { isCoordinatorAccess, isAdminAccess } }) {
   const supabase = useSupabaseClient()
@@ -28,16 +29,22 @@ function Parcticipants({ users, access: { isCoordinatorAccess, isAdminAccess } }
   const [coordinators, { mutate: mutateCoordinator }] = useCoordinators({
     code,
   })
+  const [supporters, { mutate: mutateSupporter }] = useSupporters({
+    code,
+  })
   const [project] = useProject({ code })
 
   const [listOfTranslators, setListOfTranslators] = useState([])
   const [listOfCoordinators, setListOfCoordinators] = useState([])
+  const [listOfSupporters, setListOfSupporters] = useState([])
   const [openModalAssignTranslator, setOpenModalAssignTranslator] = useState(false)
   const [openModalAssignCoordinator, setOpenModalAssignCoordinator] = useState(false)
+  const [openModalAssignSupporter, setOpenModalAssignSupporter] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [selectedModerator, setSelectedModerator] = useState(null)
   const [selectedTranslator, setSelectedTranslator] = useState(null)
   const [selectedCoordinator, setSelectedCoordinator] = useState(null)
+  const [selectedSupporter, setSelectedSupporter] = useState(null)
 
   const changeModerator = async (type) => {
     const { error } = await supabase.rpc(type, {
@@ -69,9 +76,18 @@ function Parcticipants({ users, access: { isCoordinatorAccess, isAdminAccess } }
     setSelectedUser(listOf?.[0]?.id)
   }, [coordinators, users])
 
+  useEffect(() => {
+    const listOf = users?.filter(
+      (user) => !supporters?.map((supporter) => supporter.users.id).includes(user.id)
+    )
+    setListOfSupporters(listOf)
+    setSelectedUser(listOf?.[0]?.id)
+  }, [supporters, users])
+
   const roleActions = {
     translators: { mutate: mutateTranslator, reset: setSelectedTranslator },
     coordinators: { mutate: mutateCoordinator, reset: setSelectedCoordinator },
+    supporters: { mutate: mutateSupporter, reset: setSelectedSupporter },
   }
   const assign = (role) => {
     axios
@@ -119,6 +135,27 @@ function Parcticipants({ users, access: { isCoordinatorAccess, isAdminAccess } }
           <CoordinatorsList
             coordinators={coordinators}
             setSelectedCoordinator={setSelectedCoordinator}
+            access={isAdminAccess}
+          />
+        </div>
+        <div className="flex flex-col gap-7 py-5">
+          <div className="flex justify-between items-center gap-2">
+            <div>{t('projects:Supporters')}</div>
+            {isAdminAccess && (
+              <button
+                onClick={() => {
+                  setOpenModalAssignSupporter(true)
+                  setSelectedUser(listOfSupporters?.[0]?.id)
+                }}
+                className="btn-primary truncate"
+              >
+                {t('project-edit:AddSupporter')}
+              </button>
+            )}
+          </div>
+          <SupportersList
+            supporters={supporters}
+            setSelectedSupporter={setSelectedSupporter}
             access={isAdminAccess}
           />
         </div>
@@ -239,6 +276,13 @@ function Parcticipants({ users, access: { isCoordinatorAccess, isAdminAccess } }
                 label: 'project-edit:AddingTranslator',
                 role: 'translators',
               },
+              {
+                openModalAssign: openModalAssignSupporter,
+                setOpenModalAssign: setOpenModalAssignSupporter,
+                listOfAssigned: listOfSupporters,
+                label: 'project-edit:AddingSupporter',
+                role: 'supporters',
+              },
             ].map((user) => (
               <AssignParticipant
                 key={user.role}
@@ -264,6 +308,12 @@ function Parcticipants({ users, access: { isCoordinatorAccess, isAdminAccess } }
                 setSelected: setSelectedCoordinator,
                 label: 'project-edit:RemovingCoordinator',
                 role: 'coordinators',
+              },
+              {
+                selected: selectedSupporter,
+                setSelected: setSelectedSupporter,
+                label: 'project-edit:RemovingSupporter',
+                role: 'supporters',
               },
             ].map((user) => (
               <RemoveParticipant

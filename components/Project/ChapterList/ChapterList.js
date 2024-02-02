@@ -82,14 +82,25 @@ function ChapterList() {
         <>
           {!(!isBrief || briefResume) ? (
             <Link
-              href={`/projects/${project?.code}/edit?setting=brief`}
+              href={{
+                pathname: '/projects/[code]/edit',
+                query: { code: project.code, setting: 'brief' },
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               {t(isCoordinatorAccess ? 'EditBrief' : 'OpenBrief')}
             </Link>
           ) : (
             <Link
-              href={`/translate/${step.project}/${step.book}/${step.chapter}/${step.step}/intro`}
+              href={{
+                pathname: '/translate/[project]/[book]/[chapter]/[step]/intro',
+                query: {
+                  project: step.project,
+                  book: step.book,
+                  chapter: step.chapter,
+                  step: step.step,
+                },
+              }}
               onClick={(e) => e.stopPropagation()}
               className="w-fit text-sm xl:text-lg hover:opacity-70"
             >
@@ -106,7 +117,10 @@ function ChapterList() {
         <div className="flex flex-col gap-7 w-full">
           <Breadcrumbs
             links={[
-              { title: project?.title, href: '/projects/' + code },
+              {
+                title: project?.title,
+                href: '/projects/' + project?.code,
+              },
               { title: t('books:' + bookid) },
             ]}
           />
@@ -126,7 +140,8 @@ function ChapterList() {
                         isCreated &&
                         isCoordinatorAccess &&
                         push({
-                          pathname: `/projects/${project?.code}/books/${bookid}/${num}`,
+                          pathname: `/projects/[code]/books/[bookid]/[chapterid]`,
+                          query: { code: project?.code, bookid, chapterid: num },
                         })
                       }
                     >

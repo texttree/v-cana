@@ -193,7 +193,10 @@ function Verses({ verseObjects, user, reference, isLoading }) {
         <Breadcrumbs
           links={
             reference && [
-              { title: project?.title, href: '/projects/' + project?.code },
+              {
+                title: project?.title,
+                href: `/projects/${project?.code}`,
+              },
               { title: t('Reader') },
             ]
           }
@@ -239,10 +242,11 @@ function Verses({ verseObjects, user, reference, isLoading }) {
                   text-th-primary-200 hover:opacity-70 cursor-pointer"
                   onClick={() =>
                     push({
-                      pathname: `/projects/${project?.code}`,
+                      pathname: `/projects/[code]`,
                       query: {
                         properties: bookid,
                         levels: true,
+                        code: project?.code,
                       },
                     })
                   }
@@ -294,7 +298,7 @@ function Navigation({ books, reference, setReference }) {
     [nextChapter, selectedBook?.chapters]
   )
   return (
-    <div className="flex flex-wrap sm:flex-auto justify-center sm:justify-start gap-3 z-10">
+    <div className="flex flex-wrap sm:flex-auto justify-center sm:justify-start gap-3">
       <button
         className={`flex justify-around items-center gap-1 w-2/5 sm:w-auto px-7 py-3 bg-th-secondary-100 rounded-3xl ${
           !prevChapter ? 'cursor-default' : 'bg-th-secondary-100 cursor-pointer'
