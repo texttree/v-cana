@@ -29,6 +29,7 @@ import Rename from 'public/rename.svg'
 import Export from 'public/export.svg'
 import Import from 'public/import.svg'
 import Close from 'public/close.svg'
+import Progress from 'public/progress.svg'
 
 const Redactor = dynamic(
   () => import('@texttree/notepad-rcl').then((mod) => mod.Redactor),
@@ -59,7 +60,7 @@ const icons = {
   closeFolder: <CloseFolder className={'w-6 h-6'} />,
 }
 
-function TeamNotes() {
+function TeamNotes({ config }) {
   const [contextMenuEvent, setContextMenuEvent] = useState(null)
   const [hoveredNodeId, setHoveredNodeId] = useState(null)
   const [currentNodeProps, setCurrentNodeProps] = useState(null)
@@ -73,12 +74,13 @@ function TeamNotes() {
   const [term, setTerm] = useState('')
   const { user } = useCurrentUser()
   const [allNotes] = useAllTeamlNotes()
+  const isRtl = config?.isRtl || false
 
   const {
     query: { project: code },
   } = useRouter()
   const [project] = useProject({ code })
-  const [notes, { mutate }] = useTeamNotes({
+  const [notes, { isLoading, mutate }] = useTeamNotes({
     project_id: project?.id,
   })
   const [{ isModeratorAccess }] = useAccess({
@@ -354,12 +356,15 @@ function TeamNotes() {
     }
   }
 
+  const classNameButtonIcon = `flex items-center gap-2.5 py-1 pl-2.5 ${
+    isRtl ? 'pr-2' : 'pr-7'
+  }`
   const menuItems = {
     contextMenu: [
       {
         id: 'adding_note',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <FileIcon /> {t('common:NewDocument')}
           </span>
         ),
@@ -368,7 +373,7 @@ function TeamNotes() {
       {
         id: 'adding_folder',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <CloseFolder /> {t('common:NewFolder')}
           </span>
         ),
@@ -377,7 +382,7 @@ function TeamNotes() {
       {
         id: 'rename',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <Rename /> {t('common:Rename')}
           </span>
         ),
@@ -386,7 +391,7 @@ function TeamNotes() {
       {
         id: 'delete',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <Trash className="w-4" /> {t('common:Delete')}
           </span>
         ),
@@ -397,7 +402,7 @@ function TeamNotes() {
       {
         id: 'export',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <Export className="w-4 stroke-2" /> {t('common:Export')}
           </span>
         ),
@@ -406,7 +411,7 @@ function TeamNotes() {
       {
         id: 'import',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <Import className="w-4 stroke-2" /> {t('common:Import')}
           </span>
         ),
@@ -415,7 +420,7 @@ function TeamNotes() {
       {
         id: 'remove',
         buttonContent: (
-          <span className="flex items-center gap-2.5 py-1 pr-7 pl-2.5">
+          <span className={classNameButtonIcon}>
             <Trash className="w-4 stroke-2" /> {t('common:RemoveAll')}
           </span>
         ),
@@ -444,10 +449,14 @@ function TeamNotes() {
         <div>
           {isModeratorAccess && (
             <div className="flex justify-end w-full">
-              <MenuButtons classNames={dropMenuClassNames} menuItems={dropMenuItems} />
+              <MenuButtons
+                classNames={dropMenuClassNames}
+                menuItems={dropMenuItems}
+                isRtl={isRtl}
+              />
             </div>
           )}
-          <div className="relative flex items-center mb-4">
+          <div className="relative flex items-center mb-4" dir={isRtl ? 'rtl' : 'ltr'}>
             <input
               className="input-primary flex-1"
               value={term}
@@ -456,34 +465,42 @@ function TeamNotes() {
             />
             {term && (
               <Close
-                className="absolute р-6 w-6 right-1 z-10 cursor-pointer"
+                className={`absolute р-6 w-6 z-10 cursor-pointer ${
+                  isRtl ? 'left-1' : 'right-1 '
+                }`}
                 onClick={() => setTerm('')}
               />
             )}
           </div>
-          <TreeView
-            term={term}
-            selection={noteId}
-            handleDeleteNode={handleRemoveNode}
-            classes={{
-              nodeWrapper:
-                'flex px-5 leading-[47px] text-lg cursor-pointer rounded-lg bg-th-secondary-100 hover:bg-th-secondary-200',
-              nodeTextBlock: 'items-center truncate',
-            }}
-            data={dataForTreeView}
-            setSelectedNodeId={setNoteId}
-            selectedNodeId={noteId}
-            treeWidth={'w-full'}
-            icons={icons}
-            handleOnClick={changeNode}
-            handleContextMenu={handleContextMenu}
-            hoveredNodeId={hoveredNodeId}
-            setHoveredNodeId={setHoveredNodeId}
-            getCurrentNodeProps={setCurrentNodeProps}
-            handleRenameNode={handleRenameNode}
-            handleDragDrop={isModeratorAccess ? handleDragDrop : null}
-            openByDefault={false}
-          />
+          {!isLoading || notes?.length ? (
+            <TreeView
+              term={term}
+              selection={noteId}
+              handleDeleteNode={handleRemoveNode}
+              classes={{
+                nodeWrapper: `px-5 leading-[47px] text-lg cursor-pointer rounded-lg bg-th-secondary-100 hover:bg-th-secondary-200 ${
+                  isRtl ? '' : 'flex'
+                }`,
+                nodeTextBlock: 'items-center truncate',
+              }}
+              data={dataForTreeView}
+              setSelectedNodeId={setNoteId}
+              selectedNodeId={noteId}
+              treeWidth={'w-full'}
+              icons={icons}
+              handleOnClick={changeNode}
+              handleContextMenu={handleContextMenu}
+              hoveredNodeId={hoveredNodeId}
+              setHoveredNodeId={setHoveredNodeId}
+              getCurrentNodeProps={setCurrentNodeProps}
+              handleRenameNode={handleRenameNode}
+              handleDragDrop={isModeratorAccess ? handleDragDrop : null}
+              openByDefault={false}
+              isRtl={isRtl}
+            />
+          ) : (
+            <Progress className="progress-custom-colors w-14 animate-spin stroke-th-primary-100 mx-auto" />
+          )}
           {isModeratorAccess && (
             <ContextMenu
               setIsVisible={setIsShowMenu}
@@ -496,6 +513,7 @@ function TeamNotes() {
                 menuContainer: menuItems.container.className,
                 emptyMenu: 'p-2.5 cursor-pointer text-gray-300',
               }}
+              isRtl={isRtl}
             />
           )}
         </div>
@@ -524,6 +542,7 @@ function TeamNotes() {
             placeholder={isModeratorAccess ? t('common:TextNewNote') : ''}
             emptyTitle={t('common:EmptyTitle')}
             isSelectableTitle
+            isRtl={isRtl}
           />
         </>
       )}

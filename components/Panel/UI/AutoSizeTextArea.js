@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function AutoSizeTextArea({ disabled = false, updateVerse, index, verseObject }) {
+function AutoSizeTextArea({ updateVerse, index, verseObject, isRtl, disabled = false }) {
   const [startValue, setStartValue] = useState(false)
   useEffect(() => {
     if (startValue === false || disabled) {
@@ -22,6 +22,7 @@ function AutoSizeTextArea({ disabled = false, updateVerse, index, verseObject })
           updateVerse(index, e.target.innerText.trim())
         }
       }}
+      dir={isRtl ? 'rtl' : 'ltr'}
       className={`block w-full mx-3 focus:outline-none focus:inline-none whitespace-pre-line focus:bg-th-secondary-10 ${
         verseObject.verse || disabled ? '' : 'bg-th-secondary-100'
       }`}

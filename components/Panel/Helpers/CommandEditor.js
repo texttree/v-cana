@@ -96,7 +96,7 @@ function CommandEditor({ config }) {
 
         if (!isNullVerse) return
 
-        if (config.config.getFromResource && config.mainResource) {
+        if (config?.config?.getFromResource && config.mainResource) {
           const { owner, repo, commit, bookPath } = config.mainResource
           const params = {
             verses: [],
@@ -184,7 +184,6 @@ function CommandEditor({ config }) {
 
     setVerseObjects(_verseObjects)
   }
-
   return (
     <>
       {verseObjects.map((verseObject, index) => (
@@ -215,6 +214,7 @@ function CommandEditor({ config }) {
             verseObject={verseObject}
             index={index}
             updateVerse={updateVerse}
+            isRtl={config?.isRtl}
           />
         </div>
       ))}
